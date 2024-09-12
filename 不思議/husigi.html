@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Your UI</title>
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      background-size: cover;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      margin: 0;
+      transition: background-image 0.5s ease-in-out;
+    }
+
+    #game {
+      background-color: rgba(255, 255, 255, 0.7);
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      padding: 40px;
+      text-align: center;
+      margin-bottom: 50px;
+      position: relative;
+      margin-top: -30px;
+      width: 400px;
+    }
+
+    #characterImage {
+      max-width: 100%;
+      border-radius: 10px;
+      margin-bottom: 10px;
+    }
+
+    #name {
+      font-size: 18px;
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+
+    #text {
+      font-size: 24px;
+      line-height: 1.5;
+      margin-bottom: 30px;
+    }
+
+    #next {
+      background-color: #4caf50;
+      color: #fff;
+      border: none;
+      padding: 15px 30px;
+      font-size: 18px;
+      cursor: pointer;
+      border-radius: 5px;
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+
+    #next:hover {
+      background-color: #45a049;
+    }
+
+    body.hiroba {
+      background-image: url('広場.jpg');
+    }
+
+    body.mori {
+      background-image: url('森.jpg');
+    }
+
+    body.kiro {
+      background-image: url('帰路.jpg');
+    }
+
+    body.adventure {
+      background-image: url('始まりの空.jpg');
+    }
+
+    body.preConversation #characterImage {
+      display: none;
+    }
+
+    /* 追加したCSS部分 */
+    audio {
+      display: none; /* 音楽のオーディオ要素は非表示にします */
+    }
+  </style>
+</head>
+
+<body>
+  <div id="game">
+    <img id="characterImage" src="pre-conversation-image.jpg" alt="Pre-conversation Image">
+    <div id="name"></div>
+    <div id="text"></div>
+    <button id="next">次へ</button>
+  </div>
+
+  <!-- 追加した音楽ファイルのオーディオ要素 -->
+  <audio id="bgm-hiroba" src="wonderland.mp3" preload="auto" loop></audio>
+  <audio id="bgm-mori" src="penguin.mp3" preload="auto" loop></audio>
+  <audio id="bgm-kiro" src="naked.mp3" preload="auto" loop></audio>
+  <audio id="bgm-adventure" src="adventure.mp3" preload="auto" loop></audio>
+
+  <script>
+let textIndex = 0;
+let dialogues = [
+  { name: '', text: '3人の不思議な日常', background: 'adventure' },
+  { name: '', text: 'ある晴れた日の朝、町の広場でアクティブな冒険者のアレックスが集まった友人たちを見渡しながら、興奮気味に話し始めた。', background: 'hiroba' },
+  { name: 'アレックス', text: '皆、今日は特別な冒険に出かけようと思うんだ！町の外れにある森に行って、隠された宝物を探してみない？', background: 'hiroba' },
+  { name: 'サラ', text: '宝物探し？それは楽しそうだけど、ちょっと心配だわ。森って迷いやすいし、準備が大変そう…。', background: 'hiroba' },
+  { name: 'アレックス', text: '心配しないで、サラ。冒険は楽しまなくちゃね！それに、君がいてくれるから安心だよ。', background: 'hiroba' },
+  { name: 'マックス', text: '僕も賛成だけど、計画はしっかり立てないと。地図とコンパスは忘れずに持っていこう。もしもの時のために備えも大切だし。', background: 'hiroba' },
+  { name: 'サラ', text: 'それにしても、アレックスが考えている冒険ってどんな感じなの？まさか、森の中に迷路があったりして？', background: 'hiroba' },
+  { name: 'アレックス', text: '秘密だよ、サラ。でも、きっとワクワクするような発見があるから、楽しみにしてて！', background: 'hiroba' },
+  { name: 'サラ', text: 'わかったわ。でも、もし何か問題が起きたら、どうしようか？', background: 'hiroba' },
+  { name: 'マックス', text: 'それも考慮して、計画を立てよう。必要な物資や連絡手段も確認しておこう。', background: 'hiroba' },
+  { name: '', text: '森に入ると、アレックスは果敢に前進し、サラとマックスはその後をついていく。森の中は神秘的で、美しい景色が広がっているが、道はどんどん険しくなっていく。', background: 'mori' },
+  { name: 'アレックス', text: '森って本当に素晴らしいね。こんなに自然と触れ合えるなんて最高だ！', background: 'mori' },
+  { name: 'サラ', text: 'うん、でも虫がちょっと苦手なの。何か対策はないの？', background: 'mori' },
+  { name: 'マックス', text: '虫対策はバッチリだよ。これを使って、できるだけ快適に過ごそう。', background: 'mori' },
+  { name: 'アレックス', text: 'さて、みんなの元気も確保できたし、進もう！あそこにある古い木の下に何かあるかもしれない。', background: 'mori' },
+  { name: 'サラ', text: 'アレックス、ちょっと待って！ここに小さな池があるわ。もしかして、宝物が隠れているかも？', background: 'mori' },
+  { name: 'マックス', text: 'なるほど、池の中や周りも調査しよう。どんなヒントが隠されているかわからないしね。', background: 'mori' },
+  { name: 'アレックス', text: '見て！ここに古い巻物がある！', background: 'mori' },
+  { name: 'サラ', text: 'それが宝物なの？どうやって開けるのかしら？', background: 'mori' },
+  { name: 'マックス', text: 'ちょっと待って、巻物に書かれている文字を解析しよう。', background: 'mori' },
+  { name: '', text: '数時間後、3人は「宝物のありか」とされる場所に到着する。しかし、そこには何も見当たらない。', background: 'mori' },
+  { name: 'アレックス', text: 'ここが目的地のはずなのに、何も見つからないな…。', background: 'mori' },
+  { name: 'サラ', text: 'それでも、今日の冒険は素晴らしかったわ。道中の景色や体験、みんなで過ごした時間が大切だと思う。', background: 'mori' },
+  { name: 'マックス', text: '確かに。地図や巻物に書かれていたことも、実は何かのメタファーだったのかもしれないね。', background: 'mori' },
+  { name: 'アレックス', text: 'そうかもしれないね。冒険そのものが一番の宝物だったのかも。みんなとの時間や体験が、何よりも価値があるんだ。', background: 'mori' },
+  { name: 'サラ', text: 'そうね。今日の冒険で、私たちの絆も深まったし、最高のハピネスを感じられたわ。', background: 'mori' },
+  { name: 'マックス', text: '計画通りにいかないこともあるけど、それもまた楽しい経験だよね。今後の冒険の参考にもなるし。', background: 'mori' },
+  { name: '', text: '町に戻る途中、3人は笑いながら冒険を振り返る。アレックスのリーダーシップ、サラの支え、マックスの知恵が、彼らの旅を楽しいものにしてくれた。', background: 'kiro' },
+  { name: 'アレックス', text: 'やっぱり、宝物なんてどうでもいいんだよね。こうしてみんなと過ごせた時間が、一番の宝物だよ。', background: 'kiro' },
+  { name: 'サラ', text: '本当にそうね。みんなと過ごすことがどれだけ大切か、改めて感じたわ。次はどんな冒険にしようか？', background: 'kiro' },
+  { name: 'マックス', text: 'それに、今日の経験から学んだことも多い。計画や準備の重要性と、予測できないことにどう対応するかも。', background: 'kiro' },
+  { name: 'アレックス', text: 'そうだね。次回の冒険も楽しみだけど、その前に、町のカフェでお茶でもしようよ。お腹が空いたし、美味しいケーキも食べたいな。', background: 'kiro' },
+  { name: 'サラ', text: 'いいわね！お茶の時間は、リラックスして楽しむ最高のひとときよ。', background: 'kiro' },
+  { name: 'マックス', text: 'それに、また次の計画を立てるのも楽しみだね。何か新しいアイディアがあれば、みんなで考えよう。', background: 'kiro' },
+  { name: '', text: 'おしまい', background: 'kiro' },
+];
+
+    let characterImages = {
+      'アレックス': 'アレックス.jpg',
+      'サラ': 'サラ.jpg',
+      'マックス': 'マックス.jpg',
+    };
+
+   function showNextText() {
+      let characterImage = document.getElementById('characterImage');
+      let nameDiv = document.getElementById('name');
+      let textDiv = document.getElementById('text');
+      let body = document.body;
+
+      if (textIndex < dialogues.length) {
+        nameDiv.textContent = dialogues[textIndex].name;
+        textDiv.innerHTML = dialogues[textIndex].text;
+
+        let characterName = dialogues[textIndex].name;
+
+        if (characterName in characterImages) {
+          characterImage.src = characterImages[characterName];
+          characterImage.style.display = '';
+        } else {
+          characterImage.src = '';
+          characterImage.style.display = 'none';
+        }
+
+        body.className = ''; // Clear existing classes
+
+        if (dialogues[textIndex].background) {
+          body.classList.add(dialogues[textIndex].background);
+          playBGM(dialogues[textIndex].background); // BGMを再生
+        }
+
+        textIndex++;
+      } else {
+        characterImage.style.display = 'none';
+        textDiv.innerHTML = 'おしまい';
+        characterImage.src = '';
+        stopAllBGM(); // 全てのBGMを停止
+      }
+    }
+
+    function playBGM(background) {
+      stopAllBGM(); // 全てのBGMを停止
+      let bgmElement = document.getElementById(`bgm-${background}`);
+      if (bgmElement) {
+        bgmElement.play();
+      }
+    }
+
+    function stopAllBGM() {
+      let bgms = document.querySelectorAll('audio');
+      bgms.forEach(bgm => bgm.pause());
+    }
+
+    let nextButton = document.getElementById('next');
+    nextButton.addEventListener('click', showNextText);
+
+    showNextText(); // 初期化処理
+  </script>
+</body>
+</html>
